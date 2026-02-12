@@ -75,11 +75,18 @@ export interface CustomerWidgetProps {
     statusDistribution: StatusDistribution[];
     dateRange?: string;
     loading?: boolean;
+    // Granular visibility controls
+    showStats?: boolean;
+    showGrowth?: boolean;
+    showStatus?: boolean;
 }
 
 const props = withDefaults(defineProps<CustomerWidgetProps>(), {
     dateRange: '30d',
     loading: false,
+    showStats: true,
+    showGrowth: true,
+    showStatus: true,
 });
 
 const emit = defineEmits<{
@@ -222,7 +229,7 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
         </div>
 
         <!-- Key Metrics Grid -->
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div v-if="showStats" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <!-- Total Customers -->
             <Card>
                 <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -289,7 +296,7 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
         </div>
 
         <!-- Secondary Metrics Row -->
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div v-if="showStats" class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <!-- Retention Rate -->
             <Card>
                 <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -356,7 +363,7 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
         </div>
 
         <!-- At Risk Alert -->
-        <Card v-if="metrics.atRisk > 0" class="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
+        <Card v-if="showStats && metrics.atRisk > 0" class="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20">
             <CardContent class="flex items-center gap-4 pt-6">
                 <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
                     <AlertTriangle class="h-5 w-5 text-amber-600" />
@@ -376,9 +383,9 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
         </Card>
 
         <!-- Charts Section -->
-        <div class="grid gap-6 lg:grid-cols-2">
+        <div v-if="showGrowth || showStatus" class="grid gap-6 lg:grid-cols-2">
             <!-- Growth Chart -->
-            <Card>
+            <Card v-if="showGrowth">
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
                         <Activity class="h-5 w-5" />
@@ -425,7 +432,7 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
             </Card>
 
             <!-- Status Distribution Chart -->
-            <Card>
+            <Card v-if="showStatus">
                 <CardHeader>
                     <CardTitle class="flex items-center gap-2">
                         <Users class="h-5 w-5" />
@@ -498,7 +505,7 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
         </div>
 
         <!-- Status Bar Chart -->
-        <Card>
+        <Card v-if="showStatus">
             <CardHeader>
                 <CardTitle>Customer Status Overview</CardTitle>
                 <CardDescription>All customer statuses at a glance</CardDescription>
