@@ -183,6 +183,98 @@ class Customer extends Model
     }
 
     /**
+     * Scope for new customers (created within last 30 days).
+     */
+    public function scopeNew($query)
+    {
+        return $query->where('created_at', '>=', now()->subDays(30));
+    }
+
+    /**
+     * Scope for at-risk customers (no activity for 30-90 days).
+     */
+    public function scopeAtRisk($query)
+    {
+        return $query->active()
+            ->where('updated_at', '<', now()->subDays(30))
+            ->where('updated_at', '>=', now()->subDays(90));
+    }
+
+    /**
+     * Scope for churned customers (inactive 90+ days or suspended/inactive status).
+     */
+    public function scopeChurned($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereIn('status', ['inactive', 'suspended'])
+                ->orWhere('updated_at', '<', now()->subDays(90));
+        });
+    }
+
+    /**
+     * Scope for returning customers (have activity after first creation).
+     */
+    public function scopeReturning($query)
+    {
+        return $query->active()
+            ->whereColumn('updated_at', '>', 'created_at');
+    }
+
+    /**
+     * Scope for VIP customers.
+     */
+    public function scopeVip($query)
+    {
+        return $query->active()
+            ->whereNotNull('email_verified_at')
+            ->where('updated_at', '>=', now()->subDays(7));
+    }
+
+    /**
+     * Scope for customers created within a date range.
+     */
+    public function scopeCreatedBetween($query, $start, $end)
+    {
+        return $query->whereBetween('created_at', [$start, $end]);
+    }
+
+    /**
+     * Get customer status category.
+     */
+    public function getStatusCategoryAttribute(): string
+    {
+        if ($this->status === 'suspended') {
+            return 'churned';
+        }
+
+        if ($this->status === 'inactive') {
+            return 'churned';
+        }
+
+        $daysSinceUpdate = $this->updated_at?->diffInDays(now()) ?? 0;
+
+        if ($daysSinceUpdate >= 90) {
+            return 'churned';
+        }
+
+        if ($daysSinceUpdate >= 30) {
+            return 'at_risk';
+        }
+
+        $daysSinceCreation = $this->created_at->diffInDays(now());
+
+        if ($daysSinceCreation <= 30) {
+            return 'new';
+        }
+
+        if ($this->email_verified_at && $daysSinceUpdate <= 7) {
+            return 'vip';
+        }
+
+        return 'active';
+    }
+
+    /**
      * Mark the customer's email as verified.
      */
     public function markEmailAsVerified(): bool

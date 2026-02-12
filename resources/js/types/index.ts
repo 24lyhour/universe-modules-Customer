@@ -134,3 +134,55 @@ export interface CustomerCreateProps {
 export interface CustomerEditProps {
     customer: Customer;
 }
+
+// Widget Types
+export interface CustomerMetrics {
+    total: number;
+    newThisMonth: number;
+    newThisPeriod: number;
+    active: number;
+    returning: number;
+    atRisk: number;
+    churned: number;
+    vip: number;
+    growthPercent: number;
+    previousPeriodTotal: number;
+    retentionRate: number;
+    churnRate: number;
+    averageRevenue: number;
+    totalRevenue: number;
+}
+
+export interface GrowthDataPoint {
+    label: string;
+    value: number;
+    newCustomers: number;
+    churned: number;
+}
+
+export interface StatusDistribution {
+    status: string;
+    count: number;
+    color: string;
+}
+
+export interface CustomerWidgetData {
+    metrics: CustomerMetrics;
+    growthData: GrowthDataPoint[];
+    statusDistribution: StatusDistribution[];
+    dateRange: string;
+}
+
+// Customer Profile Types (for detailed view)
+export interface CustomerProfile extends Customer {
+    registrationDate: string;
+    lastLoginDate: string | null;
+    lastOrderDate: string | null;
+    totalOrders: number;
+    totalSpending: number;
+    averageOrderValue: number;
+    customerStatus: 'new' | 'active' | 'at_risk' | 'churned' | 'vip';
+    lifetimeValue: number;
+    daysSinceLastOrder: number | null;
+    orderFrequency: number; // orders per month
+}

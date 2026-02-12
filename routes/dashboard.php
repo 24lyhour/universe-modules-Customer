@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Customer\Http\Controllers\CustomerController;
 use Modules\Customer\Http\Controllers\CustomerStatusController;
 use Modules\Customer\Http\Controllers\CustomerSecurityController;
+use Modules\Customer\Http\Controllers\CustomerWidgetController;
 use Modules\Customer\Http\Middleware\DashboardMiddleware;
 
 Route::middleware(['auth', 'verified', DashboardMiddleware::class])
@@ -40,5 +41,15 @@ Route::middleware(['auth', 'verified', DashboardMiddleware::class])
                 ->name('enable-2fa');
             Route::delete('disable-2fa', [CustomerSecurityController::class, 'disableTwoFactor'])
                 ->name('disable-2fa');
+        });
+
+        // Customer Widget API Routes (for AJAX updates)
+        Route::prefix('customers/widget')->name('customer.widget.')->group(function () {
+            Route::get('/data', [CustomerWidgetController::class, 'getData'])
+                ->name('data');
+            Route::get('/metrics', [CustomerWidgetController::class, 'metrics'])
+                ->name('metrics');
+            Route::get('/growth', [CustomerWidgetController::class, 'growth'])
+                ->name('growth');
         });
     });
