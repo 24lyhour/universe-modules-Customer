@@ -4,7 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChartContainer } from '@/components/ui/chart';
+import {
+    ChartContainer,
+    ChartCrosshair,
+    ChartTooltip,
+    ChartTooltipContent,
+    componentToString,
+} from '@/components/ui/chart';
 import {
     VisXYContainer,
     VisStackedBar,
@@ -33,7 +39,7 @@ import {
     Repeat,
     Target,
 } from 'lucide-vue-next';
-import { useChartColors } from '@/composables/useChartColors';
+import type { ChartConfig } from '@/components/ui/chart';
 
 // Types
 export interface CustomerMetrics {
@@ -84,8 +90,6 @@ const emit = defineEmits<{
     (e: 'refresh'): void;
 }>();
 
-const { chartColors } = useChartColors();
-
 const selectedDateRange = ref(props.dateRange);
 
 // Date range options
@@ -108,28 +112,29 @@ const retentionTrend = computed(() => ({
     value: props.metrics.retentionRate,
 }));
 
-// Chart configs
-const growthChartConfig = computed(() => ({
-    value: { label: 'Total Customers', color: chartColors.value.chart1 },
-    newCustomers: { label: 'New', color: chartColors.value.chart2 },
-    churned: { label: 'Churned', color: chartColors.value.chart3 },
-}));
+// Chart configs - use CSS variables for shadcn-vue compatibility
+const growthChartConfig: ChartConfig = {
+    value: { label: 'Total Customers', color: 'var(--chart-1)' },
+    newCustomers: { label: 'New Customers', color: 'var(--chart-2)' },
+    churned: { label: 'Churned', color: 'var(--chart-3)' },
+};
 
-const statusChartConfig = computed(() => ({
-    new: { label: 'New', color: chartColors.value.chart1 },
-    active: { label: 'Active', color: chartColors.value.chart2 },
-    returning: { label: 'Returning', color: chartColors.value.chart3 },
-    atRisk: { label: 'At Risk', color: chartColors.value.chart4 },
-    vip: { label: 'VIP', color: chartColors.value.chart5 },
-}));
+const statusChartConfig: ChartConfig = {
+    new: { label: 'New', color: 'var(--chart-1)' },
+    active: { label: 'Active', color: 'var(--chart-2)' },
+    returning: { label: 'Returning', color: 'var(--chart-3)' },
+    atRisk: { label: 'At Risk', color: 'var(--chart-4)' },
+    vip: { label: 'VIP', color: 'var(--chart-5)' },
+    churned: { label: 'Churned', color: 'var(--primary)' },
+};
 
-// Donut chart data
+// Donut chart data - use config colors
 const donutData = computed(() => [
-    { label: 'New', value: props.metrics.newThisPeriod, color: chartColors.value.chart1 },
-    { label: 'Active', value: props.metrics.active, color: chartColors.value.chart2 },
-    { label: 'Returning', value: props.metrics.returning, color: chartColors.value.chart3 },
-    { label: 'At Risk', value: props.metrics.atRisk, color: chartColors.value.chart4 },
-    { label: 'VIP', value: props.metrics.vip, color: chartColors.value.chart5 },
+    { label: 'New', value: props.metrics.newThisPeriod, color: statusChartConfig.new.color },
+    { label: 'Active', value: props.metrics.active, color: statusChartConfig.active.color },
+    { label: 'Returning', value: props.metrics.returning, color: statusChartConfig.returning.color },
+    { label: 'At Risk', value: props.metrics.atRisk, color: statusChartConfig.atRisk.color },
+    { label: 'VIP', value: props.metrics.vip, color: statusChartConfig.vip.color },
 ]);
 
 // Status bar data
@@ -386,25 +391,37 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                 </CardHeader>
                 <CardContent>
                     <ChartContainer :config="growthChartConfig" class="h-[280px]">
-                        <VisXYContainer :data="growthData">
+                        <VisXYContainer :data="props.growthData" :margin="{ top: 10, bottom: 10 }">
                             <VisArea
-                                :x="(_: any, i: number) => i"
+                                :x="(d: GrowthDataPoint, i: number) => i"
                                 :y="(d: GrowthDataPoint) => d.value"
-                                :color="chartColors.chart1"
-                                :opacity="0.3"
-                                curveType="monotone"
+                                :color="growthChartConfig.value.color"
+                                :opacity="0.4"
                             />
                             <VisLine
-                                :x="(_: any, i: number) => i"
+                                :x="(d: GrowthDataPoint, i: number) => i"
                                 :y="(d: GrowthDataPoint) => d.value"
-                                :color="chartColors.chart1"
-                                :lineWidth="2"
+                                :color="growthChartConfig.value.color"
+                                :line-width="2"
                             />
                             <VisAxis
                                 type="x"
-                                :tickFormat="(i: number) => growthData[i]?.label || ''"
+                                :tick-line="false"
+                                :domain-line="false"
+                                :grid-line="false"
+                                :tick-format="(i: number) => props.growthData[i]?.label || ''"
                             />
-                            <VisAxis type="y" />
+                            <VisAxis
+                                type="y"
+                                :num-ticks="5"
+                                :tick-line="false"
+                                :domain-line="false"
+                            />
+                            <ChartTooltip />
+                            <ChartCrosshair
+                                :template="componentToString(growthChartConfig, ChartTooltipContent, { labelKey: 'label', indicator: 'line' })"
+                                :color="growthChartConfig.value.color"
+                            />
                         </VisXYContainer>
                     </ChartContainer>
                 </CardContent>
@@ -475,18 +492,18 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
             </CardHeader>
             <CardContent>
                 <ChartContainer :config="statusChartConfig" class="h-[200px]">
-                    <VisXYContainer :data="statusBarData">
+                    <VisXYContainer :data="statusBarData" :margin="{ top: 10, bottom: 10 }">
                         <VisStackedBar
                             :x="(_: any, i: number) => i"
                             :y="(d: any) => d.value"
-                            :color="(d: any, i: number) => {
+                            :color="(_: any, i: number) => {
                                 const colors = [
-                                    chartColors.chart1,
-                                    chartColors.chart2,
-                                    chartColors.chart3,
-                                    chartColors.chart4,
-                                    chartColors.chart5,
-                                    chartColors.primary,
+                                    statusChartConfig.new.color,
+                                    statusChartConfig.active.color,
+                                    statusChartConfig.returning.color,
+                                    statusChartConfig.atRisk.color,
+                                    statusChartConfig.churned.color,
+                                    statusChartConfig.vip.color,
                                 ];
                                 return colors[i % colors.length];
                             }"
@@ -495,9 +512,21 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                         />
                         <VisAxis
                             type="x"
-                            :tickFormat="(i: number) => statusBarData[i]?.label || ''"
+                            :tick-line="false"
+                            :domain-line="false"
+                            :grid-line="false"
+                            :tick-format="(i: number) => statusBarData[i]?.label || ''"
                         />
-                        <VisAxis type="y" />
+                        <VisAxis
+                            type="y"
+                            :num-ticks="5"
+                            :tick-line="false"
+                            :domain-line="false"
+                        />
+                        <ChartTooltip />
+                        <ChartCrosshair
+                            :template="componentToString(statusChartConfig, ChartTooltipContent, { indicator: 'dot' })"
+                        />
                     </VisXYContainer>
                 </ChartContainer>
             </CardContent>
