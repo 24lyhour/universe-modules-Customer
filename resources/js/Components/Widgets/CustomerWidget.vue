@@ -8,12 +8,11 @@ import {
     ChartContainer,
     ChartCrosshair,
     ChartTooltip,
-    ChartTooltipContent,
-    componentToString,
 } from '@/components/ui/chart';
+import { Donut } from '@unovis/ts';
 import {
     VisXYContainer,
-    VisStackedBar,
+    VisGroupedBar,
     VisAxis,
     VisSingleContainer,
     VisDonut,
@@ -26,8 +25,6 @@ import {
     UserPlus,
     UserCheck,
     UserX,
-    TrendingUp,
-    TrendingDown,
     Crown,
     AlertTriangle,
     RefreshCw,
@@ -128,13 +125,13 @@ const statusChartConfig: ChartConfig = {
     churned: { label: 'Churned', color: 'var(--primary)' },
 };
 
-// Donut chart data - use config colors
+// Donut chart data - use keys matching statusChartConfig for tooltip
 const donutData = computed(() => [
-    { label: 'New', value: props.metrics.newThisPeriod, color: statusChartConfig.new.color },
-    { label: 'Active', value: props.metrics.active, color: statusChartConfig.active.color },
-    { label: 'Returning', value: props.metrics.returning, color: statusChartConfig.returning.color },
-    { label: 'At Risk', value: props.metrics.atRisk, color: statusChartConfig.atRisk.color },
-    { label: 'VIP', value: props.metrics.vip, color: statusChartConfig.vip.color },
+    { status: 'new', label: 'New', value: props.metrics.newThisPeriod, fill: 'var(--color-new)' },
+    { status: 'active', label: 'Active', value: props.metrics.active, fill: 'var(--color-active)' },
+    { status: 'returning', label: 'Returning', value: props.metrics.returning, fill: 'var(--color-returning)' },
+    { status: 'atRisk', label: 'At Risk', value: props.metrics.atRisk, fill: 'var(--color-atRisk)' },
+    { status: 'vip', label: 'VIP', value: props.metrics.vip, fill: 'var(--color-vip)' },
 ]);
 
 // Status bar data
@@ -390,16 +387,16 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                     <CardDescription>Customer acquisition over time</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ChartContainer :config="growthChartConfig" class="h-[280px]">
+                    <ChartContainer :config="growthChartConfig" class="h-[280px]" cursor>
                         <VisXYContainer :data="props.growthData" :margin="{ top: 10, bottom: 10 }">
                             <VisArea
-                                :x="(d: GrowthDataPoint, i: number) => i"
+                                :x="(_: GrowthDataPoint, i: number) => i"
                                 :y="(d: GrowthDataPoint) => d.value"
                                 :color="growthChartConfig.value.color"
                                 :opacity="0.4"
                             />
                             <VisLine
-                                :x="(d: GrowthDataPoint, i: number) => i"
+                                :x="(_: GrowthDataPoint, i: number) => i"
                                 :y="(d: GrowthDataPoint) => d.value"
                                 :color="growthChartConfig.value.color"
                                 :line-width="2"
@@ -419,7 +416,7 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                             />
                             <ChartTooltip />
                             <ChartCrosshair
-                                :template="componentToString(growthChartConfig, ChartTooltipContent, { labelKey: 'label', indicator: 'line' })"
+                                :template="(d: GrowthDataPoint) => `<div class='border-border/50 bg-background min-w-32 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl'><div class='font-medium'>${d.label}</div><div class='text-muted-foreground'>${d.value.toLocaleString()} customers</div></div>`"
                                 :color="growthChartConfig.value.color"
                             />
                         </VisXYContainer>
@@ -439,14 +436,30 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                 <CardContent>
                     <div class="grid gap-6 lg:grid-cols-2">
                         <!-- Donut Chart -->
-                        <ChartContainer :config="statusChartConfig" class="h-[200px]">
-                            <VisSingleContainer :data="donutData">
+                        <ChartContainer
+                            :config="statusChartConfig"
+                            class="h-[200px]"
+                            :style="{
+                                '--vis-donut-central-label-font-size': 'var(--text-2xl)',
+                                '--vis-donut-central-label-font-weight': 'var(--font-weight-bold)',
+                                '--vis-donut-central-label-text-color': 'var(--foreground)',
+                                '--vis-donut-central-sub-label-text-color': 'var(--muted-foreground)',
+                            }"
+                        >
+                            <VisSingleContainer :data="donutData" :margin="{ top: 10, bottom: 10 }">
                                 <VisDonut
                                     :value="(d: any) => d.value"
-                                    :color="(d: any) => d.color"
-                                    :arcWidth="50"
-                                    :padAngle="0.02"
-                                    :cornerRadius="4"
+                                    :color="(d: any) => statusChartConfig[d.status as keyof typeof statusChartConfig]?.color"
+                                    :arc-width="40"
+                                    :pad-angle="0.02"
+                                    :corner-radius="4"
+                                    :central-label="props.metrics.total.toLocaleString()"
+                                    central-sub-label="Total"
+                                />
+                                <ChartTooltip
+                                    :triggers="{
+                                        [Donut.selectors.segment]: (d: any) => `<div class='border-border/50 bg-background min-w-32 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl'><div class='flex items-center gap-2'><span class='h-2 w-2 rounded-full' style='background-color: ${statusChartConfig[d.status as keyof typeof statusChartConfig]?.color}'></span><span class='font-medium'>${d.label}</span></div><div class='text-muted-foreground'>${d.value.toLocaleString()} customers</div></div>`,
+                                    }"
                                 />
                             </VisSingleContainer>
                         </ChartContainer>
@@ -462,11 +475,11 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                                     <span
                                         class="h-3 w-3 rounded-full"
                                         :class="{
-                                            'bg-[var(--chart-1)]': index === 0,
-                                            'bg-[var(--chart-2)]': index === 1,
-                                            'bg-[var(--chart-3)]': index === 2,
-                                            'bg-[var(--chart-4)]': index === 3,
-                                            'bg-[var(--chart-5)]': index === 4,
+                                            'bg-chart-1': index === 0,
+                                            'bg-chart-2': index === 1,
+                                            'bg-chart-3': index === 2,
+                                            'bg-chart-4': index === 3,
+                                            'bg-chart-5': index === 4,
                                         }"
                                     ></span>
                                     <span class="text-sm">{{ item.label }}</span>
@@ -491,9 +504,9 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                 <CardDescription>All customer statuses at a glance</CardDescription>
             </CardHeader>
             <CardContent>
-                <ChartContainer :config="statusChartConfig" class="h-[200px]">
-                    <VisXYContainer :data="statusBarData" :margin="{ top: 10, bottom: 10 }">
-                        <VisStackedBar
+                <ChartContainer :config="statusChartConfig" class="h-[200px]" cursor>
+                    <VisXYContainer :data="statusBarData" :margin="{ left: -24 }" :y-domain="[0, undefined]">
+                        <VisGroupedBar
                             :x="(_: any, i: number) => i"
                             :y="(d: any) => d.value"
                             :color="(_: any, i: number) => {
@@ -507,8 +520,8 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                                 ];
                                 return colors[i % colors.length];
                             }"
-                            :barPadding="0.3"
-                            :roundedCorners="4"
+                            :bar-padding="0.1"
+                            :rounded-corners="4"
                         />
                         <VisAxis
                             type="x"
@@ -519,13 +532,14 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
                         />
                         <VisAxis
                             type="y"
-                            :num-ticks="5"
+                            :num-ticks="3"
                             :tick-line="false"
                             :domain-line="false"
                         />
                         <ChartTooltip />
                         <ChartCrosshair
-                            :template="componentToString(statusChartConfig, ChartTooltipContent, { indicator: 'dot' })"
+                            :template="(d: any) => `<div class='border-border/50 bg-background min-w-32 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl'><div class='font-medium'>${d.label}</div><div class='text-muted-foreground'>${d.value.toLocaleString()} customers</div></div>`"
+                            color="#0000"
                         />
                     </VisXYContainer>
                 </ChartContainer>
