@@ -5,5 +5,6 @@ export type {
     CustomerMetrics,
     GrowthDataPoint,
     StatusDistribution,
+    RecentCustomer,
     CustomerWidgetData,
 } from '../../types';

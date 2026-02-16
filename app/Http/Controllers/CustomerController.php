@@ -11,12 +11,14 @@ use Modules\Customer\Http\Requests\UpdateCustomerRequest;
 use Modules\Customer\Http\Resources\CustomerResource;
 use Modules\Customer\Models\Customer;
 use Modules\Customer\Services\CustomerService;
+use Modules\Customer\Services\CustomerWidgetService;
 use Momentum\Modal\Modal;
 
 class CustomerController extends Controller
 {
     public function __construct(
-        protected CustomerService $customerService
+        protected CustomerService $customerService,
+        protected CustomerWidgetService $customerWidgetService
     ) {}
 
     /**
@@ -35,6 +37,7 @@ class CustomerController extends Controller
             'customers' => CustomerResource::collection($customers)->response()->getData(true),
             'filters' => $filters,
             'stats' => $this->customerService->getStats(),
+            'recentCustomers' => $this->customerWidgetService->getRecentCustomers(),
         ]);
     }
 

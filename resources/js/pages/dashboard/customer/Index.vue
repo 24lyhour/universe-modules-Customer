@@ -34,7 +34,6 @@ import {
 import { type BreadcrumbItem } from '@/types';
 import type { Customer, CustomerIndexProps } from '../../../types';
 
-// Persistent layout required for momentum-modal to work
 defineOptions({
     layout: (h: (type: unknown, props: unknown, children: unknown) => VNode, page: VNode) =>
         h(AppLayout, { breadcrumbs: [
@@ -49,7 +48,6 @@ const props = defineProps<CustomerIndexProps>();
 const searchQuery = ref(props.filters.search || '');
 const statusFilter = ref(props.filters.status || '');
 
-// Filtered data based on search (client-side filtering for immediate feedback)
 const filteredCustomers = computed(() => {
     if (!searchQuery.value) {
         return props.customers.data;
@@ -68,9 +66,39 @@ const isDeleteModalOpen = ref(false);
 const isDeleting = ref(false);
 const selectedCustomer = ref<Customer | null>(null);
 
+// Check if customer is new (registered within last 7 days)
+const isNewCustomer = (createdAt: string) => {
+    const created = new Date(createdAt);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+    return diffDays <= 7;
+};
+
+// Get human-readable time ago
+const getTimeAgo = (createdAt: string) => {
+    const created = new Date(createdAt);
+    const now = new Date();
+    const diffMs = now.getTime() - created.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    if (diffWeeks === 1) return '1 week ago';
+    if (diffWeeks < 4) return `${diffWeeks} weeks ago`;
+    if (diffMonths === 1) return '1 month ago';
+    if (diffMonths < 12) return `${diffMonths} months ago`;
+    if (diffYears === 1) return '1 year ago';
+    return `${diffYears} years ago`;
+};
+
 // Table columns
 const columns: TableColumn<Customer>[] = [
-    { key: 'name', label: 'Customer', width: '30%' },
+    { key: 'name', label: 'Customer', width: '25%' },
+    { key: 'is_new', label: 'Recently' },
     { key: 'phone', label: 'Phone' },
     { key: 'status', label: 'Status' },
     { key: 'email_verified', label: 'Verified' },
@@ -311,6 +339,16 @@ const getStatusVariant = (status: string) => {
                         <div>
                             <div class="font-medium">{{ item.name }}</div>
                             <div class="text-sm text-muted-foreground">{{ item.email }}</div>
+                        </div>
+                    </template>
+
+                    <!-- Custom cell for recently registered -->
+                    <template #cell-is_new="{ item }">
+                        <div class="flex items-center gap-2">
+                            <Badge v-if="isNewCustomer(item.created_at)" variant="default" class="bg-green-500 hover:bg-green-600">
+                                New
+                            </Badge>
+                            <span class="text-sm text-muted-foreground">{{ getTimeAgo(item.created_at) }}</span>
                         </div>
                     </template>
 

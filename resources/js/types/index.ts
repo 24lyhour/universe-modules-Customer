@@ -121,6 +121,7 @@ export interface CustomerIndexProps {
     customers: PaginatedResponse<Customer>;
     filters: CustomerFilters;
     stats: CustomerStats;
+    recentCustomers?: RecentCustomer[];
 }
 
 export interface CustomerShowProps {
@@ -166,10 +167,21 @@ export interface StatusDistribution {
     color: string;
 }
 
+export interface RecentCustomer {
+    id: number;
+    name: string;
+    email: string;
+    status: string;
+    status_label: string;
+    created_at: string;
+    created_at_human: string;
+}
+
 export interface CustomerWidgetData {
     metrics: CustomerMetrics;
     growthData: GrowthDataPoint[];
     statusDistribution: StatusDistribution[];
+    recentCustomers: RecentCustomer[];
     dateRange: string;
 }
 

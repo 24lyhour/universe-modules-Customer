@@ -35,7 +35,11 @@ import {
     DollarSign,
     Repeat,
     Target,
+    Mail,
+    Clock,
+    Eye,
 } from 'lucide-vue-next';
+import { Link } from '@inertiajs/vue3';
 import type { ChartConfig } from '@/components/ui/chart';
 
 // Types
@@ -69,16 +73,28 @@ export interface StatusDistribution {
     color: string;
 }
 
+export interface RecentCustomer {
+    id: number;
+    name: string;
+    email: string;
+    status: string;
+    status_label: string;
+    created_at: string;
+    created_at_human: string;
+}
+
 export interface CustomerWidgetProps {
     metrics: CustomerMetrics;
     growthData: GrowthDataPoint[];
     statusDistribution: StatusDistribution[];
+    recentCustomers?: RecentCustomer[];
     dateRange?: string;
     loading?: boolean;
     // Granular visibility controls
     showStats?: boolean;
     showGrowth?: boolean;
     showStatus?: boolean;
+    showRecent?: boolean;
 }
 
 const props = withDefaults(defineProps<CustomerWidgetProps>(), {
@@ -87,6 +103,7 @@ const props = withDefaults(defineProps<CustomerWidgetProps>(), {
     showStats: true,
     showGrowth: true,
     showStatus: true,
+    showRecent: true,
 });
 
 const emit = defineEmits<{
@@ -504,53 +521,115 @@ const getStatusBadgeVariant = (status: string): 'default' | 'secondary' | 'destr
             </Card>
         </div>
 
-        <!-- Status Bar Chart -->
-        <Card v-if="showStatus">
-            <CardHeader>
-                <CardTitle>Customer Status Overview</CardTitle>
-                <CardDescription>All customer statuses at a glance</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ChartContainer :config="statusChartConfig" class="h-[200px]" cursor>
-                    <VisXYContainer :data="statusBarData" :margin="{ left: -24 }" :y-domain="[0, undefined]">
-                        <VisGroupedBar
-                            :x="(_: any, i: number) => i"
-                            :y="(d: any) => d.value"
-                            :color="(_: any, i: number) => {
-                                const colors = [
-                                    statusChartConfig.new.color,
-                                    statusChartConfig.active.color,
-                                    statusChartConfig.returning.color,
-                                    statusChartConfig.atRisk.color,
-                                    statusChartConfig.churned.color,
-                                    statusChartConfig.vip.color,
-                                ];
-                                return colors[i % colors.length];
-                            }"
-                            :bar-padding="0.1"
-                            :rounded-corners="4"
-                        />
-                        <VisAxis
-                            type="x"
-                            :tick-line="false"
-                            :domain-line="false"
-                            :grid-line="false"
-                            :tick-format="(i: number) => statusBarData[i]?.label || ''"
-                        />
-                        <VisAxis
-                            type="y"
-                            :num-ticks="3"
-                            :tick-line="false"
-                            :domain-line="false"
-                        />
-                        <ChartTooltip />
-                        <ChartCrosshair
-                            :template="(d: any) => `<div class='border-border/50 bg-background min-w-32 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl'><div class='font-medium'>${d.label}</div><div class='text-muted-foreground'>${d.value.toLocaleString()} customers</div></div>`"
-                            color="#0000"
-                        />
-                    </VisXYContainer>
-                </ChartContainer>
-            </CardContent>
-        </Card>
+        <!-- Recent Customers & Status Bar Chart Grid -->
+        <div v-if="showRecent || showStatus" class="grid gap-6 lg:grid-cols-2">
+            <!-- Recent Customers -->
+            <Card v-if="showRecent && recentCustomers && recentCustomers.length > 0" class="flex flex-col">
+                <CardHeader>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <CardTitle class="flex items-center gap-2">
+                                <UserPlus class="h-5 w-5 text-green-500" />
+                                Recently Registered Customers
+                            </CardTitle>
+                            <CardDescription>Latest customer registrations</CardDescription>
+                        </div>
+                        <Link href="/dashboard/customers" class="text-sm text-primary hover:underline">
+                            View All
+                        </Link>
+                    </div>
+                </CardHeader>
+                <CardContent class="flex-1">
+                    <div class="space-y-3">
+                        <div
+                            v-for="customer in recentCustomers"
+                            :key="customer.id"
+                            class="flex items-center justify-between rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                        >
+                            <div class="flex items-center gap-3">
+                                <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-medium">
+                                    {{ customer.name.charAt(0).toUpperCase() }}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-medium truncate">{{ customer.name }}</p>
+                                    <div class="flex items-center gap-1 text-sm text-muted-foreground">
+                                        <Mail class="h-3 w-3 shrink-0" />
+                                        <span class="truncate">{{ customer.email }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <div class="text-right">
+                                    <Badge
+                                        :variant="customer.status === 'active' ? 'default' : customer.status === 'inactive' ? 'secondary' : 'destructive'"
+                                    >
+                                        {{ customer.status_label }}
+                                    </Badge>
+                                    <div class="mt-1 flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                                        <Clock class="h-3 w-3" />
+                                        {{ customer.created_at_human }}
+                                    </div>
+                                </div>
+                                <Link
+                                    :href="`/dashboard/customers/${customer.id}`"
+                                    class="rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                >
+                                    <Eye class="h-4 w-4" />
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <!-- Status Bar Chart -->
+            <Card v-if="showStatus" class="flex flex-col">
+                <CardHeader>
+                    <CardTitle>Customer Status Overview</CardTitle>
+                    <CardDescription>All customer statuses at a glance</CardDescription>
+                </CardHeader>
+                <CardContent class="flex-1">
+                    <ChartContainer :config="statusChartConfig" class="h-full min-h-[250px]" cursor>
+                        <VisXYContainer :data="statusBarData" :margin="{ left: -24 }" :y-domain="[0, undefined]">
+                            <VisGroupedBar
+                                :x="(_: any, i: number) => i"
+                                :y="(d: any) => d.value"
+                                :color="(_: any, i: number) => {
+                                    const colors = [
+                                        statusChartConfig.new.color,
+                                        statusChartConfig.active.color,
+                                        statusChartConfig.returning.color,
+                                        statusChartConfig.atRisk.color,
+                                        statusChartConfig.churned.color,
+                                        statusChartConfig.vip.color,
+                                    ];
+                                    return colors[i % colors.length];
+                                }"
+                                :bar-padding="0.1"
+                                :rounded-corners="4"
+                            />
+                            <VisAxis
+                                type="x"
+                                :tick-line="false"
+                                :domain-line="false"
+                                :grid-line="false"
+                                :tick-format="(i: number) => statusBarData[i]?.label || ''"
+                            />
+                            <VisAxis
+                                type="y"
+                                :num-ticks="3"
+                                :tick-line="false"
+                                :domain-line="false"
+                            />
+                            <ChartTooltip />
+                            <ChartCrosshair
+                                :template="(d: any) => `<div class='border-border/50 bg-background min-w-32 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl'><div class='font-medium'>${d.label}</div><div class='text-muted-foreground'>${d.value.toLocaleString()} customers</div></div>`"
+                                color="#0000"
+                            />
+                        </VisXYContainer>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
+        </div>
     </div>
 </template>

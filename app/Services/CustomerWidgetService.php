@@ -19,8 +19,29 @@ class CustomerWidgetService
             'metrics' => $this->getMetrics($dateRange),
             'growthData' => $this->getGrowthData($dateRange),
             'statusDistribution' => $this->getStatusDistribution(),
+            'recentCustomers' => $this->getRecentCustomers(),
             'dateRange' => $dateRange,
         ];
+    }
+
+    /**
+     * Get recently registered customers.
+     */
+    public function getRecentCustomers(int $limit = 5): array
+    {
+        return Customer::latest()
+            ->take($limit)
+            ->get(['id', 'name', 'email', 'status', 'created_at'])
+            ->map(fn ($customer) => [
+                'id' => $customer->id,
+                'name' => $customer->name,
+                'email' => $customer->email,
+                'status' => $customer->status,
+                'status_label' => ucfirst($customer->status),
+                'created_at' => $customer->created_at->toISOString(),
+                'created_at_human' => $customer->created_at->diffForHumans(),
+            ])
+            ->toArray();
     }
 
     /**
