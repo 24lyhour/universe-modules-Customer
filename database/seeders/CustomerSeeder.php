@@ -36,6 +36,7 @@ class CustomerSeeder extends Seeder
                 'gender' => 'male',
                 'status' => 'active',
                 'email_verified_at' => now(),
+                'phone_verified_at' => now(),
                 'two_factor_enabled' => false,
             ]
         );
@@ -52,6 +53,7 @@ class CustomerSeeder extends Seeder
                 'gender' => 'male',
                 'status' => 'active',
                 'email_verified_at' => now(),
+                'phone_verified_at' => now(),
                 'two_factor_enabled' => true,
             ]
         );
@@ -68,6 +70,7 @@ class CustomerSeeder extends Seeder
                 'gender' => 'female',
                 'status' => 'active',
                 'email_verified_at' => now(),
+                'phone_verified_at' => now(),
             ]
         );
 

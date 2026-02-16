@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\Customer\Database\Factories\CustomerFactory;
 use Modules\Customer\Traits\TwoFactorAuthentication;
+use \Modules\Wallets\Models\Wallet;
 
 class Customer extends Model
 {
@@ -99,7 +100,7 @@ class Customer extends Model
      */
     public function wallet(): BelongsTo
     {
-        return $this->belongsTo(\Modules\Wallets\Models\Wallet::class);
+        return $this->belongsTo(Wallet::class);
     }
 
     /**
