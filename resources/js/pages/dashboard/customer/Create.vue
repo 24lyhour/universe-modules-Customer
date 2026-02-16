@@ -6,10 +6,8 @@ import { useForm } from '@inertiajs/vue3';
 import { useModal } from 'momentum-modal';
 import { computed } from 'vue';
 
-// Get modal controls from momentum-modal
 const { show, close, redirect } = useModal();
 
-// Create a computed property for v-model:open binding
 const isOpen = computed({
     get: () => show.value,
     set: (val: boolean) => {

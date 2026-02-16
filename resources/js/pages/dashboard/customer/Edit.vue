@@ -23,10 +23,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// Get modal controls from momentum-modal
 const { show, close, redirect } = useModal();
 
-// Create a computed property for v-model:open binding
 const isOpen = computed({
     get: () => show.value,
     set: (val: boolean) => {
