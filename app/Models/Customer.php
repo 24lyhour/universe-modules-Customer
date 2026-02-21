@@ -2,6 +2,7 @@
 
 namespace Modules\Customer\Models;
 
+use App\Traits\BelongsToOutlet;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,9 +15,7 @@ use \Modules\Wallets\Models\Wallet;
 
 class Customer extends Model
 {
-    use HasApiTokens;
-    use HasFactory;
-    use TwoFactorAuthentication;
+    use HasApiTokens, HasFactory, TwoFactorAuthentication, BelongsToOutlet;
 
     /**
      * The attributes that are mass assignable.
