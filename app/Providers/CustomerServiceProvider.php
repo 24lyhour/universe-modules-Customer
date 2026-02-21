@@ -47,11 +47,11 @@ class CustomerServiceProvider extends ServiceProvider
                 url: route('customer.customers.index'),
                 icon: 'Users',
                 order: 40,
-                permissions: null,
+                permissions: 'customers.view_any',
                 route: 'customer.*'
             );
 
-            MenuService::addSubmenuItem('primary', 'customer', __('Customers'), route('customer.customers.index'), 10, null, 'customer.customers.*', 'Users');
+            MenuService::addSubmenuItem('primary', 'customer', __('Customers'), route('customer.customers.index'), 10, 'customers.view_any', 'customer.customers.*', 'Users');
         });
     }
 
