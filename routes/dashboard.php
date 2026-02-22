@@ -7,7 +7,7 @@ use Modules\Customer\Http\Controllers\CustomerSecurityController;
 use Modules\Customer\Http\Controllers\CustomerWidgetController;
 use Modules\Customer\Http\Middleware\DashboardMiddleware;
 
-Route::middleware(['auth', 'verified', DashboardMiddleware::class])
+Route::middleware(['auth', 'verified', DashboardMiddleware::class, 'auto.permission'])
     ->prefix('dashboard')
     ->group(function () {
         // Customer CRUD

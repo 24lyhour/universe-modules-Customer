@@ -19,7 +19,9 @@ class CustomerController extends Controller
     public function __construct(
         protected CustomerService $customerService,
         protected CustomerWidgetService $customerWidgetService
-    ) {}
+    ) {
+        // Authorization is handled by 'auto.permission' middleware in routes
+    }
 
     /**
      * Display a listing of the resource.
