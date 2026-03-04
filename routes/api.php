@@ -5,6 +5,7 @@ use Modules\Customer\Http\Controllers\Api\CustomerApiController;
 use Modules\Customer\Http\Controllers\Api\CustomerAuthController;
 use Modules\Customer\Http\Controllers\Api\CustomerRegisterController;
 use Modules\Customer\Http\Controllers\Api\CustomerStatusApiController;
+use Modules\Customer\Http\Controllers\Api\DeviceTokenController;
 
 // Public auth routes (no authentication required)
 Route::prefix('v1/auth')->group(function () {
@@ -27,6 +28,10 @@ Route::middleware(['auth:sanctum'])->prefix('v1/auth')->group(function () {
     Route::post('logout-all', [CustomerAuthController::class, 'logoutAll'])->name('customer.auth.logout-all');
     Route::get('customer', [CustomerAuthController::class, 'me'])->name('customer.auth.customer');
     Route::post('customer', [CustomerAuthController::class, 'update'])->name('customer.auth.customer.update');
+
+    // Device Token (FCM)
+    Route::post('device-token', [DeviceTokenController::class, 'store'])->name('customer.auth.device-token.store');
+    Route::delete('device-token', [DeviceTokenController::class, 'destroy'])->name('customer.auth.device-token.destroy');
 });
 
 // Protected customer routes

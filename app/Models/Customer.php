@@ -37,6 +37,7 @@ class Customer extends Model
         'provider_id',
         'avatar',
         'access_token',
+        'fcm_token',
         'two_factor_enabled',
         'email_verified_at',
         'phone_verified_at',
