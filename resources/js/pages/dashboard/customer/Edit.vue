@@ -15,6 +15,7 @@ interface Customer {
     date_of_birth: string | null;
     gender: string | null;
     status: 'active' | 'inactive' | 'suspended';
+    avatar: string | null;
 }
 
 interface Props {
@@ -45,6 +46,7 @@ const form = useForm<CustomerFormData>({
     status: props.customer.status,
     password: '',
     password_confirmation: '',
+    avatar: props.customer.avatar || '',
 });
 
 const handleSubmit = () => {

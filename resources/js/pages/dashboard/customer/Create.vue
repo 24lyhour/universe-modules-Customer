@@ -28,6 +28,7 @@ const form = useForm<CustomerFormData>({
     status: 'active',
     password: '',
     password_confirmation: '',
+    avatar: '',
 });
 
 const handleSubmit = () => {

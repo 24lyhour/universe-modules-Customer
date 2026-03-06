@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -9,6 +10,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { ImageUpload } from '@/components/shared';
 import type { InertiaForm } from '@inertiajs/vue3';
 
 export interface CustomerFormData {
@@ -21,6 +23,7 @@ export interface CustomerFormData {
     status: 'active' | 'inactive' | 'suspended';
     password: string;
     password_confirmation: string;
+    avatar: string;
 }
 
 interface Props {
@@ -32,10 +35,36 @@ withDefaults(defineProps<Props>(), {
 });
 
 const model = defineModel<InertiaForm<CustomerFormData>>({ required: true });
+
+// Convert avatar string to array for ImageUpload component
+const avatarImages = computed({
+    get: () => model.value.avatar ? [model.value.avatar] : [],
+    set: (value: string[]) => {
+        model.value.avatar = value.length > 0 ? value[0] : '';
+    },
+});
 </script>
 
 <template>
     <div class="space-y-6">
+        <!-- Profile Photo Section -->
+        <div class="space-y-4">
+            <div>
+                <h3 class="text-sm font-medium">Profile Photo</h3>
+                <p class="text-sm text-muted-foreground">Upload a profile picture for the customer</p>
+            </div>
+            <Separator />
+
+            <ImageUpload
+                v-model="avatarImages"
+                label=""
+                :multiple="false"
+                :max-files="1"
+                :max-size="2"
+                :error="model.errors.avatar"
+            />
+        </div>
+
         <!-- Basic Information Section -->
         <div class="space-y-4">
             <div>

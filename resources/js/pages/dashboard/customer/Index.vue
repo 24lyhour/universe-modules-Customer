@@ -12,7 +12,9 @@ import {
     Shield,
     Users,
     UserCheck,
+    User,
 } from 'lucide-vue-next';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
@@ -236,6 +238,16 @@ const getStatusVariant = (status: string) => {
             return 'outline';
     }
 };
+
+// Get initials from name
+const getInitials = (name: string) => {
+    return name
+        .split(' ')
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+};
 </script>
 
 <template>
@@ -334,11 +346,19 @@ const getStatusVariant = (status: string) => {
                         </div>
                     </template>
 
-                    <!-- Custom cell for customer name/email -->
+                    <!-- Custom cell for customer name/email with avatar -->
                     <template #cell-name="{ item }">
-                        <div>
-                            <div class="font-medium">{{ item.name }}</div>
-                            <div class="text-sm text-muted-foreground">{{ item.email }}</div>
+                        <div class="flex items-center gap-3">
+                            <Avatar class="h-10 w-10">
+                                <AvatarImage v-if="item.avatar" :src="item.avatar" :alt="item.name" />
+                                <AvatarFallback class="bg-primary/10 text-primary">
+                                    {{ getInitials(item.name) }}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <div class="font-medium">{{ item.name }}</div>
+                                <div class="text-sm text-muted-foreground">{{ item.email }}</div>
+                            </div>
                         </div>
                     </template>
 

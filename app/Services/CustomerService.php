@@ -65,6 +65,7 @@ class CustomerService
                 'date_of_birth' => $data['date_of_birth'] ?? null,
                 'gender' => $data['gender'] ?? null,
                 'status' => $data['status'] ?? 'active',
+                'avatar' => $data['avatar'] ?? null,
                 'outlet_id' => $data['outlet_id'] ?? null,
                 'wallet_id' => $data['wallet_id'] ?? null,
                 'customer_id' => $data['customer_id'] ?? null, // referrer

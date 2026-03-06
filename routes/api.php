@@ -1,11 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Customer\Http\Controllers\Api\CustomerApiController;
-use Modules\Customer\Http\Controllers\Api\CustomerAuthController;
-use Modules\Customer\Http\Controllers\Api\CustomerRegisterController;
-use Modules\Customer\Http\Controllers\Api\CustomerStatusApiController;
-use Modules\Customer\Http\Controllers\Api\DeviceTokenController;
+use Modules\Customer\Http\Controllers\Api\V1\Customer\CustomerApiController;
+use Modules\Customer\Http\Controllers\Api\V1\Customer\CustomerAuthController;
+use Modules\Customer\Http\Controllers\Api\V1\Customer\CustomerRegisterController;
+use Modules\Customer\Http\Controllers\Api\V1\Customer\CustomerStatusApiController;
+use Modules\Customer\Http\Controllers\Api\V1\Customer\DeviceTokenController;
 
 // Public auth routes (no authentication required)
 Route::prefix('v1/auth')->group(function () {

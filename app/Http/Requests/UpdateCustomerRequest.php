@@ -39,7 +39,7 @@ class UpdateCustomerRequest extends FormRequest
             'gender' => ['nullable', 'in:male,female,other'],
             'status' => ['nullable', 'in:active,inactive,suspended'],
             'outlet_id' => ['nullable', 'exists:outlets,id'],
-            'avatar' => ['nullable', 'image', 'max:2048'],
+            'avatar' => ['nullable', 'string', 'max:2048'],
         ];
     }
 
