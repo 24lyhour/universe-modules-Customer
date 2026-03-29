@@ -4,6 +4,7 @@ namespace Modules\Customer\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Customer\Models\Customer;
+use Modules\Customer\Models\CustomerShipping;
 
 class CustomerSeeder extends Seeder
 {
@@ -17,6 +18,9 @@ class CustomerSeeder extends Seeder
 
         // Create random customers
         $this->createRandomCustomers();
+
+        // Create shipping addresses for demo customers
+        $this->createDemoShippingAddresses();
     }
 
     /**
@@ -125,6 +129,12 @@ class CustomerSeeder extends Seeder
      */
     private function createRandomCustomers(): void
     {
+        // Skip if we already have enough customers (avoid duplicates on re-run)
+        $existingCount = Customer::count();
+        if ($existingCount >= 50) {
+            return;
+        }
+
         // Create 20 random active customers
         Customer::factory()
             ->count(20)
@@ -172,5 +182,180 @@ class CustomerSeeder extends Seeder
             ->female()
             ->active()
             ->create();
+    }
+
+    /**
+     * Create shipping addresses for demo customers.
+     */
+    private function createDemoShippingAddresses(): void
+    {
+        // Skip if shipping addresses already exist
+        if (CustomerShipping::count() > 0) {
+            return;
+        }
+
+        // Siev Ching - 2 addresses
+        $sievChing = Customer::where('email', 'sievching@gmail.com')->first();
+        if ($sievChing) {
+            CustomerShipping::create([
+                'customer_id' => $sievChing->id,
+                'label' => 'Home',
+                'recipient_name' => 'Siev Ching',
+                'phone_number' => '+855 12 345 678',
+                'province' => 'Phnom Penh',
+                'district' => 'Chamkarmon',
+                'commune' => 'Tonle Bassac',
+                'street_address' => 'Street 308',
+                'house_number' => '12A',
+                'floor' => null,
+                'landmark' => 'Near Aeon Mall',
+                'note' => null,
+                'latitude' => 11.5494,
+                'longitude' => 104.9339,
+                'is_default' => true,
+            ]);
+
+            CustomerShipping::create([
+                'customer_id' => $sievChing->id,
+                'label' => 'Office',
+                'recipient_name' => 'Siev Ching',
+                'phone_number' => '+855 12 345 678',
+                'province' => 'Phnom Penh',
+                'district' => 'Daun Penh',
+                'commune' => 'Wat Phnom',
+                'street_address' => 'Street 94',
+                'house_number' => '55',
+                'floor' => '3',
+                'landmark' => 'Near NagaWorld',
+                'note' => 'Use side entrance',
+                'latitude' => 11.5731,
+                'longitude' => 104.9222,
+                'is_default' => false,
+            ]);
+        }
+
+        // John Doe - 2 addresses
+        $johnDoe = Customer::where('email', 'john.doe@example.com')->first();
+        if ($johnDoe) {
+            CustomerShipping::create([
+                'customer_id' => $johnDoe->id,
+                'label' => 'Home',
+                'recipient_name' => 'John Doe',
+                'phone_number' => '+855 77 123 456',
+                'province' => 'Phnom Penh',
+                'district' => 'Sen Sok',
+                'commune' => 'Phnom Penh Thmey',
+                'street_address' => 'Street 1986',
+                'house_number' => '88',
+                'floor' => null,
+                'landmark' => 'Near Makro',
+                'note' => null,
+                'latitude' => 11.5860,
+                'longitude' => 104.8873,
+                'is_default' => true,
+            ]);
+
+            CustomerShipping::create([
+                'customer_id' => $johnDoe->id,
+                'label' => 'Office',
+                'recipient_name' => 'John Doe',
+                'phone_number' => '+855 77 123 456',
+                'province' => 'Phnom Penh',
+                'district' => 'Toul Kork',
+                'commune' => 'Boeung Kak 2',
+                'street_address' => 'Street 289',
+                'house_number' => '15B',
+                'floor' => '5',
+                'landmark' => 'Near TK Avenue',
+                'note' => 'Building B, Office 502',
+                'latitude' => 11.5773,
+                'longitude' => 104.8996,
+                'is_default' => false,
+            ]);
+        }
+
+        // Jane Smith - 1 address
+        $janeSmith = Customer::where('email', 'jane.smith@example.com')->first();
+        if ($janeSmith) {
+            CustomerShipping::create([
+                'customer_id' => $janeSmith->id,
+                'label' => 'Home',
+                'recipient_name' => 'Jane Smith',
+                'phone_number' => '+855 96 789 012',
+                'province' => 'Phnom Penh',
+                'district' => 'Meanchey',
+                'commune' => 'Stung Meanchey',
+                'street_address' => 'Street 217',
+                'house_number' => '33',
+                'floor' => null,
+                'landmark' => 'Near Chip Mong Mall',
+                'note' => null,
+                'latitude' => 11.5345,
+                'longitude' => 104.9118,
+                'is_default' => true,
+            ]);
+        }
+
+        // Bob Wilson - 1 address
+        $bobWilson = Customer::where('email', 'bob.wilson@example.com')->first();
+        if ($bobWilson) {
+            CustomerShipping::create([
+                'customer_id' => $bobWilson->id,
+                'label' => 'Home',
+                'recipient_name' => 'Bob Wilson',
+                'phone_number' => '+855 15 456 789',
+                'province' => 'Siem Reap',
+                'district' => 'Siem Reap',
+                'commune' => 'Svay Dangkum',
+                'street_address' => 'National Road 6',
+                'house_number' => '120',
+                'floor' => null,
+                'landmark' => 'Near Angkor Market',
+                'note' => null,
+                'latitude' => 13.3527,
+                'longitude' => 103.8560,
+                'is_default' => true,
+            ]);
+        }
+
+        // Alice Brown - 2 addresses
+        $aliceBrown = Customer::where('email', 'alice.brown@example.com')->first();
+        if ($aliceBrown) {
+            CustomerShipping::create([
+                'customer_id' => $aliceBrown->id,
+                'label' => 'Home',
+                'recipient_name' => 'Alice Brown',
+                'phone_number' => '+855 10 321 098',
+                'province' => 'Phnom Penh',
+                'district' => 'Russey Keo',
+                'commune' => 'Tuol Sangke',
+                'street_address' => 'Street 598',
+                'house_number' => '7',
+                'floor' => null,
+                'landmark' => 'Near Big C',
+                'note' => null,
+                'latitude' => 11.5920,
+                'longitude' => 104.9055,
+                'is_default' => true,
+            ]);
+
+            CustomerShipping::create([
+                'customer_id' => $aliceBrown->id,
+                'label' => 'Other',
+                'recipient_name' => 'Alice Brown',
+                'phone_number' => '+855 10 321 098',
+                'province' => 'Phnom Penh',
+                'district' => 'Chamkarmon',
+                'commune' => 'Tumnob Tuek',
+                'street_address' => 'Street 63',
+                'house_number' => '42',
+                'floor' => '2',
+                'landmark' => 'Near Russian Market',
+                'note' => 'Ring doorbell twice',
+                'latitude' => 11.5500,
+                'longitude' => 104.9248,
+                'is_default' => false,
+            ]);
+        }
     }
 }

@@ -304,10 +304,58 @@ class Customer extends Model
     }
 
     /**
+     * Relation to carts.
+     */
+    public function carts(): HasMany
+    {
+        return $this->hasMany(\Modules\Order\Models\Cart::class);
+    }
+
+    /**
+     * Relation to orders.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(\Modules\Order\Models\Order::class);
+    }
+
+    /**
+     * Get the active cart for this customer.
+     */
+    public function activeCart()
+    {
+        return $this->carts()->where('status', 'active')->where('is_active', true)->latest()->first();
+    }
+
+    /**
      * Create a new factory instance for the model.
      */
     protected static function newFactory(): CustomerFactory
     {
         return CustomerFactory::new();
+    }
+
+    /**
+     * restion the. reviews
+     */
+    public function Review() :BelongsTo
+    {
+        return $this->BelongsTo(Review::class , 'review_id');
+    }
+
+    /**
+     * relation to the customer group 
+     */
+    public function CustomerGroup():BelongsTo
+    {
+        return $this->BelongsTo(CustomerGroup::class, 'customer_group');
+    }
+
+    /**
+     * Relation to customer shipping addresses.
+     */
+    public function shippingAddresses(): HasMany
+    {
+        return $this->hasMany(CustomerShipping::class, 'customer_id');
     }
 }

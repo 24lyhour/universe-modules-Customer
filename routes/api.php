@@ -6,6 +6,7 @@ use Modules\Customer\Http\Controllers\Api\V1\Customer\CustomerAuthController;
 use Modules\Customer\Http\Controllers\Api\V1\Customer\CustomerRegisterController;
 use Modules\Customer\Http\Controllers\Api\V1\Customer\CustomerStatusApiController;
 use Modules\Customer\Http\Controllers\Api\V1\Customer\DeviceTokenController;
+use Modules\Customer\Http\Controllers\Api\V1\Shipping\CustomerShippingController;
 
 // Public auth routes (no authentication required)
 Route::prefix('v1/auth')->group(function () {
@@ -54,5 +55,16 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
             ->name('deactivate');
         Route::patch('suspend', [CustomerStatusApiController::class, 'suspend'])
             ->name('suspend');
+    });
+
+    // Shipping Addresses
+    Route::prefix('shipping-addresses')->name('shipping.')->group(function () {
+        Route::get('/', [CustomerShippingController::class, 'index'])->name('index');
+        Route::post('/', [CustomerShippingController::class, 'store'])->name('store');
+        Route::get('/default', [CustomerShippingController::class, 'getDefault'])->name('default');
+        Route::get('/{uuid}', [CustomerShippingController::class, 'show'])->name('show');
+        Route::put('/{uuid}', [CustomerShippingController::class, 'update'])->name('update');
+        Route::delete('/{uuid}', [CustomerShippingController::class, 'destroy'])->name('destroy');
+        Route::patch('/{uuid}/set-default', [CustomerShippingController::class, 'setDefault'])->name('set-default');
     });
 });
