@@ -3,17 +3,17 @@
 namespace Modules\Customer\Models;
 
 use App\Traits\BelongsToOutlet;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\Customer\Database\Factories\CustomerFactory;
 use Modules\Customer\Traits\TwoFactorAuthentication;
 use \Modules\Wallets\Models\Wallet;
 
-class Customer extends Model
+class Customer extends Authenticatable
 {
     use HasApiTokens, HasFactory, TwoFactorAuthentication, BelongsToOutlet;
 
