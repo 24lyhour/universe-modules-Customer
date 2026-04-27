@@ -2,10 +2,11 @@
 
 namespace Modules\Customer\Providers;
 
-use App\Services\MenuService;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Modules\Customer\Console\Commands\CustomerCreateCommand;
+use Modules\Customer\Http\Middleware\DashboardMiddlewareHandle;
 use Modules\Customer\Console\Commands\CustomerListCommand;
 use Modules\Customer\Console\Commands\CustomerStatsCommand;
 use Nwidart\Modules\Traits\PathNamespace;
@@ -31,28 +32,17 @@ class CustomerServiceProvider extends ServiceProvider
         $this->registerConfig();
         $this->registerViews();
         $this->loadMigrationsFrom(module_path($this->name, 'database/migrations'));
-        $this->registerMenuItems();
+        $this->registerDashboardMiddleware();
     }
 
     /**
-     * Register menu items for the Customer module.
+     * Sidebar entries live in DashboardMiddlewareHandle.
      */
-    protected function registerMenuItems(): void
+    protected function registerDashboardMiddleware(): void
     {
-        $this->app->booted(function () {
-            MenuService::addMenuItem(
-                menu: 'primary',
-                id: 'customer',
-                title: __('Customer'),
-                url: route('customer.customers.index'),
-                icon: 'Users',
-                order: 40,
-                permissions: 'customers.view_any',
-                route: 'customer.*'
-            );
-
-            MenuService::addSubmenuItem('primary', 'customer', __('Customers'), route('customer.customers.index'), 10, 'customers.view_any', 'customer.customers.*', 'Users');
-        });
+        /** @var \Illuminate\Foundation\Http\Kernel $kernel */
+        $kernel = $this->app->make(HttpKernel::class);
+        $kernel->prependMiddlewareToGroup('web', DashboardMiddlewareHandle::class);
     }
 
     /**
